@@ -1,9 +1,11 @@
 @page "/ListadoMultas"
+@inject NavigationManager Navigation
 @rendermode InteractiveServer
 @inject Contexto ctx
 @using Microsoft.EntityFrameworkCore
 
 <PageTitle>Mantenimiento de Multas</PageTitle>
+
 
 <h1>Mantenimiento de Multas</h1>
 
@@ -13,7 +15,52 @@
     <div class="text-end mb-3">
         <button class="btn btn-success btn-lg" @onclick="() => modo = Modo.Editar">Agregar</button>
     </div>
-   <div class="row">
+
+    <table class="table">
+        <thead class="thead-light">
+            <tr>
+                <th scope="col">Foto</th>
+                <th scope="col">Agente</th>
+                <th scope="col">Concepto</th>
+                <th scope="col">Estado</th>
+                <th scope="col">Fecha</th>
+                <th scope="col">Cedula</th>
+                <th scope="col">Costes</th>
+                <th scope="col">Coordenadas</th>
+                <th scope="col">Descripcion</th>
+                <th scope="col">Nombre</th>
+                
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (Multa multa in multas)
+            {
+                <tr>
+                    <td>
+                        @if (!string.IsNullOrEmpty(multa.Foto))
+                        {
+                            <img class="" src="@multa.Foto" alt="@multa.Nombre" width="100px" height="200px">
+                        }
+                    </td>
+                    <td>@agente</td>
+                    <td>@multa.Concepto</td>
+                    <td>@multa.Estado</td>
+                    <td>@multa.Fecha</td>
+                    <td>@multa.Cedula</td>
+                    <td>@multa.Costes</td>
+                    <td>@multa.Coordenadas()</td>
+                    <td>@multa.Descripcion</td>
+                    <td>
+                        <button @onclick="() => Editar(multa)" class="btn btn-warning mb-3">Editar</button>
+                    </td>
+                    <td>
+                        <button @onclick="() => Borrar(multa)" class="btn btn-danger mb-3">Borrar</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+ @*   <div class="row">
     @foreach(Multa multa in multas)
     {
         <div class="col-md-4 md-3">
@@ -29,8 +76,8 @@
                         <li class="list-group-item">Concepto: @multa.Concepto.Nombre</li>
                         <li class="list-group-item">Estado: @multa.Estado</li>
                         <li class="list-group-item">Fecha: @multa.Fecha.ToShortDateString()</li>
-                        <li class="list-group-item">CÃ©dula: @multa.Cedula</li>
-                        <li class="list-group-item">Coste:$ @multa.Coste</li>
+                        <li class="list-group-item">Cédula: @multa.Cedula</li>
+                        <li class="list-group-item">Coste:$ @multa.Costes</li>
                         <li class="list-group-item">Coordenadas: @multa.Latitud, @multa.Longitud</li>
                         <li class="list-group-item">Descripcion: @multa.Descripcion</li>
                     </ul>
@@ -44,7 +91,7 @@
             </div>
         </div>
     }
-</div>
+</div> *@
 
 }
 else if (modo == Modo.Editar)
@@ -55,7 +102,7 @@ else if (modo == Modo.Editar)
         <ValidationSummary />
         <div class="row mb-3">
             <div class="col">
-                <label for="Cedula" class="form-label">CÃ©dula</label>
+                <label for="Cedula" class="form-label">Cédula</label>
                 <InputText id="Cedula" class="form-control" @bind-Value="@multa.Cedula" />
             </div>
             <div class="col">
@@ -63,7 +110,7 @@ else if (modo == Modo.Editar)
                 <InputText id="Nombre" class="form-control" @bind-Value="@multa.Nombre" />
             </div>
         </div>
-        
+
         <div class="row mb-3">
             <div class="col">
                 <label for="Fecha" class="form-label">Fecha</label>
@@ -98,6 +145,7 @@ else if (modo == Modo.Editar)
 }
 
 
+
 @code {
     enum Modo
     {
@@ -106,14 +154,16 @@ else if (modo == Modo.Editar)
     }
 
     Modo modo = Modo.Lista;
+
     List<Multa> multas = new List<Multa>();
+
     Multa multa = new Multa();
 
-    public string agente{get;set;}=string.Empty;
+    public string agente { get; set; } = string.Empty;
 
     protected async Task Guardar()
     {
-        if (multa.ID > 0)
+        if (multa.Id > 0)
         {
             ctx.multas.Update(multa);
         }
@@ -152,15 +202,33 @@ else if (modo == Modo.Editar)
     {
         if (render)
         {
-            if(multa.Agente!=null)
+            if (multa.Agente != null)
             {
-                agente=multa.Agente.Nombre;
+                agente = multa.Agente.Nombre;
             }
-            Administracion.Conceptos= await ctx.Conceptos.ToListAsync();
-            Agente.multas= await ctx.multas.ToListAsync();
+            Administracion.Conceptos = await ctx.Conceptos.ToListAsync();
+            Agente.multas = await ctx.multas.ToListAsync();
             multas = await ctx.multas.ToListAsync();
             await ctx.SaveChangesAsync();
         }
         StateHasChanged();
     }
+
+
+    // private void AgregarNuevo()
+    // {
+    //     Navigation.NavigateTo("/registrarmulta/0");
+    // }
+
+    // private void EditDetention(int id)
+    // {
+    //     Navigation.NavigateTo($"/registrarmulta/{id}");
+    // }
+
+    // // Simular la carga de datos
+    // protected override void OnInitialized()
+    // {
+    //     multas = ctx.multas.ToList();
+
+    // }
 }
